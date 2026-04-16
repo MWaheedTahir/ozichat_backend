@@ -1,0 +1,139 @@
+spring:
+  application:
+    name: ozichat-backend
+  threads:
+    virtual:
+      enabled: true
+
+  # MySQL
+  datasource:
+    url: jdbc:mysql://localhost:3306/ozichat?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:W@heed555}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+
+  # MongoDB
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/ozichat}
+      auto-index-creation: true
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    time-zone: UTC
+
+  # Mail (SMTP)
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:noreply@ozichat.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+
+# JWT
+jwt:
+  secret: ${JWT_SECRET:6Fz2qW0kPzZt8xYq9vV5Lz8bQk1zQ3p0R2h5dWJvZ2J5bXJkZ3VhZzR1c2VjcmV0c3RyaW5nMTIz}
+  access-token-expiry-ms: ${JWT_ACCESS_EXPIRY:900000}        # 15 minutes
+  refresh-token-expiry-ms: ${JWT_REFRESH_EXPIRY:2592000000}  # 30 days
+
+# AWS S3
+aws:
+  s3:
+    region: ${AWS_REGION:us-east-1}
+    bucket-name: ${AWS_S3_BUCKET:ozichat-media}
+    access-key: ${AWS_ACCESS_KEY:}
+    secret-key: ${AWS_SECRET_KEY:}
+    presigned-url-expiry-minutes: ${AWS_PRESIGNED_EXPIRY:15}
+    cdn-url: ${AWS_CDN_URL:}   # Optional CloudFront URL; if set, replaces S3 URL in responses
+
+# Firebase
+firebase:
+  credentials-path: ${FIREBASE_CREDENTIALS_PATH:firebase-service-account.json}
+  project-id: ${FIREBASE_PROJECT_ID:ozichat}
+  enabled: ${FIREBASE_ENABLED:false}   # set true once credentials file is present
+
+# OTP
+otp:
+  expiry-minutes: ${OTP_EXPIRY_MINUTES:10}
+  length: 6
+
+# App
+app:
+  from-email: ${FROM_EMAIL:noreply@ozichat.com}
+  from-name: ${FROM_NAME:OziChat}
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  server:
+    url: https://unfeeling-appeasingly-natacha.ngrok-free.dev
+
+# Server
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.ozichat: DEBUG
+    org.springframework.web.socket: INFO
+    org.springframework.messaging: INFO
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n"
+
+# Swagger
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+    display-request-duration: true
+  packages-to-scan: com.ozichat
