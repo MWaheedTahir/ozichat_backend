@@ -1,4 +1,8 @@
+media:
+  presigned-url-expiry-minutes: 15
 spring:
+  profiles:
+    active: dev
   application:
     name: ozichat-backend
   threads:
@@ -45,10 +49,14 @@ spring:
           max-idle: 8
           min-idle: 4
 
+
   servlet:
     multipart:
+      enabled: true
       max-file-size: 50MB
       max-request-size: 50MB
+
+
 
   jackson:
     serialization:
@@ -137,3 +145,5 @@ springdoc:
     operations-sorter: method
     display-request-duration: true
   packages-to-scan: com.ozichat
+
+

@@ -1,0 +1,14 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+media:
+  storage: s3
+
+aws:
+  s3:
+    bucket-name: ozichat-media
+    region: us-east-1
+    cdn-url: https://cdn.ozichat.com
+    presigned-url-expiry-minutes: 15

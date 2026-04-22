@@ -1,0 +1,10 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+media:
+  storage: local
+  local:
+    upload-dir: uploads
+    base-url: http://localhost:8080/media
