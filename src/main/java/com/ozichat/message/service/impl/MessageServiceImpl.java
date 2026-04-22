@@ -5,6 +5,7 @@ import com.ozichat.conversation.repository.ConversationMemberRepository;
 import com.ozichat.exception.BusinessException;
 import com.ozichat.exception.ResourceNotFoundException;
 import com.ozichat.message.document.Message;
+import com.ozichat.message.dto.request.MediaAttachmentRequest;
 import com.ozichat.message.dto.request.SendMessageRequest;
 import com.ozichat.message.dto.response.MessageResponse;
 import com.ozichat.message.repository.MessageRepository;
@@ -37,13 +38,35 @@ public class MessageServiceImpl implements MessageService {
                 .status(Message.MessageStatus.SENT)
                 .tempId(request.getTempId())
                 .replyTo(request.getReplyTo())
+                .media(toMediaAttachment(request.getMedia()))
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
 
         Message saved = messageRepository.save(message);
-        log.debug("Message {} saved in conversation {} by sender {}", saved.getId(), conversationId, senderId);
+        log.debug("Message {} saved in conversation {} by sender {} type={}",
+                saved.getId(), conversationId, senderId, saved.getType());
         return saved;
+    }
+
+    /**
+     * Maps the incoming {@link MediaAttachmentRequest} DTO to the persisted
+     * {@link Message.MediaAttachment} embedded document.
+     * Returns {@code null} for plain TEXT messages that carry no attachment.
+     */
+    private Message.MediaAttachment toMediaAttachment(MediaAttachmentRequest req) {
+        if (req == null) return null;
+        return Message.MediaAttachment.builder()
+                .s3Key(req.getS3Key())
+                .url(req.getUrl())
+                .thumbnailUrl(req.getThumbnailUrl())
+                .mimeType(req.getMimeType())
+                .fileSize(req.getFileSize())
+                .fileName(req.getFileName())
+                .duration(req.getDuration())
+                .width(req.getWidth())
+                .height(req.getHeight())
+                .build();
     }
 
     @Override

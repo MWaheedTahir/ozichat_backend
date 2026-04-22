@@ -92,11 +92,14 @@ public class Message {
     @AllArgsConstructor
     @Builder
     public static class MediaAttachment {
+        /** S3 object key — kept so we can delete the file when a message is deleted for everyone. */
+        private String s3Key;
         private String url;
         private String thumbnailUrl;
         private String mimeType;
         private Long fileSize;
         private String fileName;
+        /** Duration in seconds — populated for AUDIO and VIDEO messages. */
         private Integer duration;
         private Integer width;
         private Integer height;
