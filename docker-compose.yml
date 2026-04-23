@@ -1,50 +1,156 @@
-version: '3.8'
+# ─────────────────────────────────────────────────────────────────────────────
+# OziChat — Full Stack Docker Compose
+#
+# Services:
+#   mysql      → relational data  (users, conversations, members, likes …)
+#   mongodb    → document data    (messages, reels, stories, calls …)
+#   redis      → cache + pub/sub  (sessions, OTP, presence, call state …)
+#   app        → Spring Boot API  (built from Dockerfile)
+#
+# Usage:
+#   docker compose up -d          # start everything
+#   docker compose logs -f app    # tail Spring Boot logs
+#   docker compose down -v        # stop + remove volumes (DESTRUCTIVE)
+# ─────────────────────────────────────────────────────────────────────────────
 
 services:
+
+  # ── MySQL ──────────────────────────────────────────────────────────────────
   mysql:
     image: mysql:8.0
     container_name: ozichat-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: "StrongPassword123!"
       MYSQL_DATABASE: ozichat
+      MYSQL_USER: ozichat
+      MYSQL_PASSWORD: "StrongPassword123!"
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 10s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pStrongPassword123!"]
+      interval: 10s
+      timeout: 5s
       retries: 10
+      start_period: 30s
+    networks:
+      - ozichat-net
 
+  # ── MongoDB ────────────────────────────────────────────────────────────────
   mongodb:
     image: mongo:7.0
     container_name: ozichat-mongodb
     restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ozichat
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongo_data:/data/db
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 10
+      start_period: 20s
+    networks:
+      - ozichat-net
 
+  # ── Redis ──────────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: ozichat-redis
     restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass RedisStrongPass456!
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1
+      --appendonly yes
     ports:
-      - "6379:6379"
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "RedisStrongPass456!", "ping"]
+      interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 10s
+    networks:
+      - ozichat-net
 
+  # ── Spring Boot Application ────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ozichat-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/ozichat?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true"
+      DB_USERNAME: "ozichat"
+      DB_PASSWORD: "StrongPassword123!"
+      MONGODB_URI: "mongodb://mongodb:27017/ozichat"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "RedisStrongPass456!"
+      SERVER_PORT: "8080"
+      FIREBASE_ENABLED: "false"
+      FIREBASE_CREDENTIALS_PATH: "/app/firebase-service-account.json"
+      APP_BASE_URL: "http://localhost:8080"
+
+    volumes:
+      - uploads_data:/app/uploads
+      - ./firebase-service-account.json:/app/firebase-service-account.json:ro
+
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    networks:
+      - ozichat-net
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Volumes
+# ─────────────────────────────────────────────────────────────────────────────
 volumes:
   mysql_data:
+    driver: local
   mongo_data:
+    driver: local
   redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Network
+# ─────────────────────────────────────────────────────────────────────────────
+networks:
+  ozichat-net:
+    driver: bridge

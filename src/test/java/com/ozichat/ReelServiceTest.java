@@ -115,7 +115,7 @@ class ReelServiceTest {
 
         assertThat(response.getId()).isEqualTo(REEL_ID);
         assertThat(response.getHashtags()).containsExactly("travel", "food", "vibes");
-        assertThat(response.isLiked()).isFalse();
+        assertThat(response.getIsLiked()).isFalse();
         verify(reelRepository).save(any(Reel.class));
     }
 

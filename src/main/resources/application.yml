@@ -11,7 +11,7 @@ spring:
 
   # MySQL
   datasource:
-    url: jdbc:mysql://localhost:3306/ozichat?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/ozichat?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:W@heed555}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -85,7 +85,7 @@ spring:
 # JWT
 jwt:
   secret: ${JWT_SECRET:6Fz2qW0kPzZt8xYq9vV5Lz8bQk1zQ3p0R2h5dWJvZ2J5bXJkZ3VhZzR1c2VjcmV0c3RyaW5nMTIz}
-  access-token-expiry-ms: ${JWT_ACCESS_EXPIRY:900000}        # 15 minutes
+  access-token-expiry-ms: ${JWT_ACCESS_EXPIRY:1800000}        # 30 minutes
   refresh-token-expiry-ms: ${JWT_REFRESH_EXPIRY:2592000000}  # 30 days
 
 # AWS S3
@@ -135,6 +135,20 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n"
 
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
 # Swagger
 springdoc:
   api-docs:
@@ -147,3 +161,20 @@ springdoc:
   packages-to-scan: com.ozichat
 
 
+
+# ── WebRTC Calling ─────────────────────────────────────────────────────────
+call:
+  # How long the callee has to answer before call is marked MISSED (seconds)
+  ring-timeout-seconds: 30
+
+  # STUN servers — comma-separated URLs (Google public STUN, no credentials needed)
+  stun:
+    urls: "stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302,stun:stun2.l.google.com:19302"
+
+  # TURN server — self-hosted coturn (leave blank to disable TURN)
+  # coturn quick-start: https://github.com/coturn/coturn
+  #   turnserver -u ozichat:secret -r ozichat.com --lt-cred-mech
+  turn:
+    url: ${TURN_URL:}
+    username: ${TURN_USERNAME:}
+    credential: ${TURN_CREDENTIAL:}

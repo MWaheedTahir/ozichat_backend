@@ -1,5 +1,7 @@
 package com.ozichat;
 
+import com.ozichat.email.service.EmailService;
+import com.ozichat.otp.service.OtpService;
 import com.ozichat.security.JwtTokenProvider;
 import com.ozichat.user.dto.request.LoginRequest;
 import com.ozichat.user.dto.request.RegisterRequest;
@@ -33,6 +35,8 @@ class AuthServiceTest {
     @Mock private UserSessionRepository sessionRepository;
     @Mock private UserPrivacySettingsRepository privacyRepository;
     @Mock private JwtTokenProvider jwtTokenProvider;
+    @Mock private OtpService otpService;
+    @Mock private EmailService emailService;
 
     private PasswordEncoder passwordEncoder;
     private AuthService authService;
@@ -42,7 +46,7 @@ class AuthServiceTest {
         passwordEncoder = new BCryptPasswordEncoder(4); // low cost for tests
         authService = new AuthServiceImpl(
                 userRepository, sessionRepository, privacyRepository,
-                jwtTokenProvider, passwordEncoder);
+                jwtTokenProvider, passwordEncoder, otpService, emailService);
     }
 
     // ──────────────────────────────────────────────
