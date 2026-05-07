@@ -1,0 +1,35 @@
+# Exclude everything that does not need to go into the Docker build context.
+# A smaller context = faster builds.
+
+# Build output (re-built inside Docker)
+target/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.suo
+*.user
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Secrets / local env files — never bake into image
+.env
+.env.*
+*.env
+
+# Local uploads dir (mounted as volume at runtime)
+uploads/
+
+# Test reports
+surefire-reports/
+
+# Logs
+*.log
+logs/

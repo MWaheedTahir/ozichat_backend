@@ -58,6 +58,14 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
+    @Transactional
+    public ConversationResponse getOrCreateDirectByEmail(Long requesterId, String targetEmail) {
+        User target = userRepository.findByEmailAndDeletedAtIsNull(targetEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User with email " + targetEmail + " not found"));
+        return getOrCreateDirect(requesterId, target.getId());
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<ConversationListResponse> getUserConversations(Long userId) {
         return conversationRepository.findAllByUserId(userId)

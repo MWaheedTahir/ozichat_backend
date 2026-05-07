@@ -27,7 +27,8 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-@Profile("prod")
+@Profile("s3")
+
 @RequiredArgsConstructor
 @Slf4j
 public class S3MediaServiceImpl implements MediaService {

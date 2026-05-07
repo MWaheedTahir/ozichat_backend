@@ -114,12 +114,14 @@ app:
   from-email: ${FROM_EMAIL:noreply@ozichat.com}
   from-name: ${FROM_NAME:OziChat}
   base-url: ${APP_BASE_URL:http://localhost:8080}
-  server:
-    url: https://unfeeling-appeasingly-natacha.ngrok-free.dev
 
 # Server
 server:
   port: ${SERVER_PORT:8080}
+  # Trust X-Forwarded-Host / X-Forwarded-Proto headers set by ngrok and AWS ALB.
+  # Without this Spring always sees requests as http://localhost:8080, so
+  # Springdoc generates a Swagger server URL of localhost — breaking remote access.
+  forward-headers-strategy: framework
   error:
     include-message: always
     include-binding-errors: always
@@ -145,6 +147,12 @@ management:
   endpoint:
     health:
       show-details: always
+  health:
+    # Mail health check hammers SMTP on every /actuator/health call and marks
+    # the whole app DOWN if credentials aren't configured yet.
+    # Set to false once real Gmail App Password credentials are in place.
+    mail:
+      enabled: false
   info:
     env:
       enabled: true

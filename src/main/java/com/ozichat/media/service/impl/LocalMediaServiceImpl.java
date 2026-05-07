@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-@Profile("dev")
+@Profile({"dev", "local-storage"})
 @Slf4j
 public class LocalMediaServiceImpl implements MediaService {
 

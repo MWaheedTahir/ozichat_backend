@@ -40,9 +40,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Let CORS pre-flight pass through without authentication
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/api/v1/auth/**",
                                 "/media/**",
+                                "/api/v1/calls/testing",
                                 "/ws/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -73,14 +76,37 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
+
+        // Wildcard patterns — no more hard-coded URLs that break when ngrok restarts
+        config.setAllowedOriginPatterns(List.of(
+                "*",
+                "http://localhost:*",          // any localhost port (3000, 8080, 4200 …)
+                "http://127.0.0.1:*",          // loopback alias
+                "https://*.ngrok-free.app",    // current ngrok free-tier domains
+                "https://*.ngrok-free.dev",    // ngrok .dev domains
+                "https://https://stillness-chute-underhand.ngrok-free.dev",    // ngrok .dev domains
+                "https://*.ngrok.io",          // older ngrok domains
+                "https://stillness-chute-underhand.ngrok-free.dev/"        // production domain (add your real domain here)
+        ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+        // Accept all request headers (Authorization, Content-Type, ngrok-skip-browser-warning …)
         config.setAllowedHeaders(List.of("*"));
+
+        // Expose headers the frontend JS needs to read from responses
+        config.setExposedHeaders(List.of(
+                "Authorization",
+                "Content-Disposition",
+                "X-Total-Count"
+        ));
+
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // cache preflight response for 1 hour
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

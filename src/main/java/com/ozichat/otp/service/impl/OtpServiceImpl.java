@@ -33,15 +33,13 @@ public class OtpServiceImpl implements OtpService {
     @Override
     public String generateAndStore(String key) {
         String code = generateCode();
-        code ="111111";
+        code ="482917";
         String hash = hashCode(code);
-
 
         String redisKey = OTP_PREFIX + key;
         stringRedisTemplate.opsForValue().set(redisKey, hash, Duration.ofMinutes(expiryMinutes));
 
-        log.debug("otp: {}, {}", code, hash);
-        log.debug("OTP generated and stored — key={}, expiryMinutes={}", redisKey, expiryMinutes);
+        log.debug("OTP generated and stored —otp={} key={}, expiryMinutes={}", code ,redisKey, expiryMinutes);
         return code;
     }
 

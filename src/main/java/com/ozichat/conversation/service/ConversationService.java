@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface ConversationService {
     ConversationResponse getOrCreateDirect(Long requesterId, Long targetId);
+    ConversationResponse getOrCreateDirectByEmail(Long requesterId, String targetEmail);
     List<ConversationListResponse> getUserConversations(Long userId);
     ConversationResponse getConversation(Long conversationId, Long userId);
     boolean isMember(Long conversationId, Long userId);

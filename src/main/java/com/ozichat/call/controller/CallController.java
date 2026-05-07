@@ -40,6 +40,10 @@ public class CallController {
     @Value("${call.turn.credential:}")
     private String turnCredential;
 
+    @GetMapping("/testing")
+    public String getTesting() {
+        return "App is running!";
+    }
     /**
      * Returns ICE server configuration for WebRTC.
      * The client passes this directly to:

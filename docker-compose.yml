@@ -50,6 +50,8 @@ services:
       - "27018:27017"
     volumes:
       - mongo_data:/data/db
+      # init.js removed — Spring Data MongoDB auto-creates collections and indexes
+      # from @Document / @Indexed / @CompoundIndex annotations at startup.
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s

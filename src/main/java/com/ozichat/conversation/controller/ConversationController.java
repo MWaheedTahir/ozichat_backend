@@ -32,6 +32,15 @@ public class ConversationController {
                 conversationService.getOrCreateDirect(userId, targetUserId)));
     }
 
+    @GetMapping("/direct/by-email")
+    @Operation(summary = "Get or create a direct conversation by target user's email")
+    public ResponseEntity<ApiResponse<ConversationResponse>> getOrCreateDirectByEmail(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam String email) {
+        return ResponseEntity.ok(ApiResponse.success(
+                conversationService.getOrCreateDirectByEmail(userId, email)));
+    }
+
     @GetMapping
     @Operation(summary = "List all conversations for the authenticated user")
     public ResponseEntity<ApiResponse<List<ConversationListResponse>>> getConversations(

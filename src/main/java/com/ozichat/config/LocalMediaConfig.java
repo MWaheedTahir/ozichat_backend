@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.nio.file.Paths;
 
 @Configuration
-@Profile("dev")
+@Profile({"dev", "local-storage"})
 public class LocalMediaConfig implements WebMvcConfigurer {
 
     @Value("${media.local.upload-dir:uploads}")
